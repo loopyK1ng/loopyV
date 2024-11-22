@@ -8,24 +8,25 @@
 ********************************************************/
 
 
-module pcReg(
-                    input clk,
-                    input arstn,
-                    input writeEn,
-                    input [31:0]writeData,
-                    output [31:0]readData);
+module pcReg (
+    input clk,
+    input arstn,
+    input writeEn,
+    input [31:0] writeData,
+    output [31:0] readData
+);
 
-logic [31:0] pc;
+  logic [31:0] pc;
 
-always_ff @(posedge clk or negedge arstn) begin
-    if(!arstn) begin
-        pc <= 0;
-    end else if(writeEn) begin
-        pc <= writeData;
+  always_ff @(posedge clk or negedge arstn) begin
+    if (!arstn) begin
+      pc <= 0;
+    end else if (writeEn) begin
+      pc <= writeData;
     end
-end
+  end
 
-assign readData <= pc;
+  assign readData = pc;
 
 
 endmodule

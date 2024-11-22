@@ -9,7 +9,7 @@
 
 module controller(
                     input clk,
-                    input arstn,
+                    input arstn
 
 )
 

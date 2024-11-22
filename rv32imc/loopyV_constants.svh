@@ -103,4 +103,23 @@ localparam ALU_SLL = 4'b0111;
 localparam ALU_SRL = 4'b1000;
 localparam ALU_SRA = 4'b1001;
 
+/*****************************/
+/* Operand fetch definitions */
+/*****************************/
+
+localparam OF_ALU_A_RS1 = 1'b0;
+localparam OF_ALU_A_PC  = 1'b1;
+
+localparam OF_ALU_B_RS2 = 1'b0;
+localparam OF_ALU_B_IMM = 1'b1;
+
+/*********************************/
+/* Destination store definitions */
+/*********************************/
+
+localparam WB_SEL_ALU = 2'b00;
+localparam WB_SEL_IMM = 2'b01;
+localparam WB_SEL_LOAD = 2'b10;
+//localparam WB_SEL_I = 2'b11;
+
 `endif
