@@ -4,7 +4,7 @@
  *
  *
  * Apache License, Version 2.0
- * Copyright (c) 2023 Lennart M. Reimann
+ * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 module pipeEXMEM (
@@ -29,12 +29,20 @@ module pipeEXMEM (
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
+      EXMEMPipeRegister.loadSignal = 1'b0;
+      EXMEMPipeRegister.storeSignal = 1'b0;
+      EXMEMPipeRegister.loadStoreByteSelect = FUNCT3_BYTE;
+      EXMEMPipeRegister.storeData = 32'b0;
       EXMEMPipeRegister.rdAddr = 5'b0;
       EXMEMPipeRegister.rdWriteEn = 0;
       EXMEMPipeRegister.destinationSelect = WB_SEL_ALU;
       EXMEMPipeRegister.pc = 32'b0;
       EXMEMPipeRegister.rdWriteData = 32'b0;
     end else begin
+      EXMEMPipeRegister.loadSignal = EXControl.loadSignal;
+      EXMEMPipeRegister.storeSignal = EXControl.storeSignal;
+      EXMEMPipeRegister.loadStoreByteSelect = EXControl.loadStoreByteSelect;
+      EXMEMPipeRegister.storeData = EXControl.storeData;
       EXMEMPipeRegister.rdAddr = EXControl.rdAddr;
       EXMEMPipeRegister.rdWriteEn = EXControl.rdWriteEn;
       EXMEMPipeRegister.destinationSelect = EXControl.destinationSelect;
@@ -43,6 +51,10 @@ module pipeEXMEM (
     end
   end
 
+  assign MEMControl.loadSignal = EXMEMPipeRegister.loadSignal;
+  assign MEMControl.storeSignal = EXMEMPipeRegister.storeSignal;
+  assign MEMControl.loadStoreByteSelect = EXMEMPipeRegister.loadStoreByteSelect;
+  assign MEMControl.storeData = EXMEMPipeRegister.storeData;
   assign MEMControl.rdAddr = EXMEMPipeRegister.rdAddr;
   assign MEMControl.rdWriteEn = EXMEMPipeRegister.rdWriteEn;
   assign MEMControl.destinationSelect = EXMEMPipeRegister.destinationSelect;

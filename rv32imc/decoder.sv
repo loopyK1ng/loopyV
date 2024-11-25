@@ -4,7 +4,7 @@
  *
  *
  * Apache License, Version 2.0
- * Copyright (c) 2023 Lennart M. Reimann
+ * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 `include "loopyV_constants.svh"
@@ -19,7 +19,9 @@ module decoder (
 
 
   always_comb begin
-
+    control.loadSignal  = 0;
+    control.storeSignal = 0;
+    control.rdWriteEn   = 0;
     case (instruction[6:0])  // opcode check
       OPCODE_OP: begin
         control.rs1Addr = instruction[19:15];
@@ -216,21 +218,80 @@ module decoder (
         endcase
       end
       OPCODE_LOAD: begin
+        control.rs1Addr = instruction[19:15];
+        control.rdAddr = instruction[11:7];
+        control.operandASelect = OF_ALU_A_RS1;
+        control.operandBSelect = OF_ALU_B_IMM;
+        control.aluControl = ALU_ADD;
+        control.immediate = {{20{instruction[31]}}, instruction[31:20]};
         case (instruction[14:12])  //funct3 check
-          FUNCT3_BYTE: illegal_insn = 0;
-          FUNCT3_HALFWORD: illegal_insn = 0;
-          FUNCT3_WORD: illegal_insn = 0;
-          FUNCT3_BYTE_U: illegal_insn = 0;
-          FUNCT3_HALFWORD_U: illegal_insn = 0;
+          FUNCT3_BYTE: begin
+            illegal_insn = 0;
+            control.loadSignal = 1;
+            control.destinationSelect = WB_SEL_LOAD;
+            control.loadStoreByteSelect = FUNCT3_BYTE;
+            control.rdWriteEn = 1;
+          end
+          FUNCT3_HALFWORD: begin
+            illegal_insn = 0;
+            control.loadSignal = 1;
+            control.destinationSelect = WB_SEL_LOAD;
+            control.loadStoreByteSelect = FUNCT3_HALFWORD;
+            control.rdWriteEn = 1;
+          end
+          FUNCT3_WORD: begin
+            illegal_insn = 0;
+            control.loadSignal = 1;
+            control.destinationSelect = WB_SEL_LOAD;
+            control.loadStoreByteSelect = FUNCT3_WORD;
+            control.rdWriteEn = 1;
+          end
+          FUNCT3_BYTE_U: begin
+            illegal_insn = 0;
+            control.loadSignal = 1;
+            control.destinationSelect = WB_SEL_LOAD;
+            control.loadStoreByteSelect = FUNCT3_BYTE_U;
+            control.rdWriteEn = 1;
+          end
+          FUNCT3_HALFWORD_U: begin
+            illegal_insn = 0;
+            control.loadSignal = 1;
+            control.destinationSelect = WB_SEL_LOAD;
+            control.loadStoreByteSelect = FUNCT3_HALFWORD_U;
+            control.rdWriteEn = 1;
+          end
           default: illegal_insn = 1;
         endcase
       end
       OPCODE_STORE: begin
+        control.rs1Addr = instruction[19:15];
+        control.rs2Addr = instruction[24:20];
+        control.operandASelect = OF_ALU_A_RS1;
+        control.operandBSelect = OF_ALU_B_IMM;
+        control.aluControl = ALU_ADD;
+        control.immediate = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
         case (instruction[14:12])  //funct3 check
-          FUNCT3_BYTE: illegal_insn = 0;
-          FUNCT3_HALFWORD: illegal_insn = 0;
-          FUNCT3_WORD: illegal_insn = 0;
-          default: illegal_insn = 1;
+          FUNCT3_BYTE: begin
+            illegal_insn = 0;
+            control.storeSignal = 1;
+            control.rdWriteEn = 0;
+            control.loadStoreByteSelect = FUNCT3_BYTE;
+          end
+          FUNCT3_HALFWORD: begin
+            illegal_insn = 0;
+            control.storeSignal = 1;
+            control.rdWriteEn = 0;
+            control.loadStoreByteSelect = FUNCT3_BYTE;
+          end
+          FUNCT3_WORD: begin
+            illegal_insn = 0;
+            control.storeSignal = 1;
+            control.rdWriteEn = 0;
+            control.loadStoreByteSelect = FUNCT3_BYTE;
+          end
+          default: begin
+            illegal_insn = 1;
+          end
         endcase
       end
 

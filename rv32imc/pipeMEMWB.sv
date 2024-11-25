@@ -4,7 +4,7 @@
  *
  *
  * Apache License, Version 2.0
- * Copyright (c) 2023 Lennart M. Reimann
+ * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 // DESTINATION SELECTION needs to be done here.. 
@@ -45,7 +45,7 @@ module pipeMEMWB (
     if((WBControl.destinationSelect == WB_SEL_ALU) | (WBControl.destinationSelect == WB_SEL_IMM))begin
       WBControl.rdWriteData = MEMWBPipeRegister.rdWriteData;
     end else if (WBControl.destinationSelect == WB_SEL_LOAD) begin
-      WBControl.rdWriteData = dmLoadData;  //TODO can we make this prettier?
+          WBControl.rdWriteData = dmLoadData;
     end else begin
       //TODO
       WBControl.rdWriteData = 32'b0;

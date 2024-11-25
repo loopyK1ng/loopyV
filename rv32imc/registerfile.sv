@@ -4,7 +4,7 @@ written by Lennart M. Reimann
 
 
 Apache License, Version 2.0
-Copyright (c) 2023 Lennart M. Reimann
+Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 
@@ -24,13 +24,18 @@ module registerFile (
 
   logic [31:0] registers[32];
 
+  // Register x0 is always 0
+  initial registers[0] = 32'b0;
+
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
       for (integer i = 0; i < 32; i = i + 1) begin
         registers[i] <= 0;
       end
     end else if (writeEn) begin
-      registers[writeAddr] <= writeData;
+      if (writeAddr != 5'b0) begin
+        registers[writeAddr] <= writeData;
+      end
     end
   end
 

@@ -4,7 +4,7 @@
  *
  *
  * Apache License, Version 2.0
- * Copyright (c) 2023 Lennart M. Reimann
+ * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 
@@ -13,10 +13,12 @@ module processor_top (
     input arstn,
     output [31:0] pmAddr,
     input [31:0] pmData,
-    output [31:0] dmAddr,
-    output [31:0] dmStData,
-    input [31:0] dmLdData,
-    output dmSignal
+    output [31:0] dataBusAddr,
+    output [31:0] dataBusStData,
+    input [31:0] dataBusLdData,
+    output dataBusLdSignal,
+    output dataBusStSignal,
+    output [3:0] dataBusWriteMask
 
 );
 
@@ -33,8 +35,32 @@ Write-back (WB): Write back the result to the register file
 
   DEStageSignalsType DEStageSignals;
   EXStageSignalsType EXStageSignals;
+  MEMStageSignalsType MEMStageSignals;
+  WBStageSignalsType WBStageSignals;
+  logic [31:0] dmLdData;
 
-  registerfile registerfile(
+  assign dmLdSignal = MEMStageSignals.loadSignal;
+  assign dmStSignal = MEMStageSignals.storeSignal;
+  assign dmAddr     = MEMStageSignals.rdWriteData;
+
+  dm_interface dm_interface (
+      .dmAddr(MEMStageSignals.rdWriteData),
+      .dmStData(MEMStageSignals.storeData),
+      .dmLdData(dmLdData),
+      .loadStoreByteSelect(MEMStageSignals.loadStoreByteSelect),
+      .dmLdSignal(MEMStageSignals.loadSignal),
+      .dmStSignal(MEMStageSignals.storeSignal),
+
+      .dataBusAddr(dataBusAddr),
+      .dataBusReadData(dataBusLdData),
+      .dataBusWriteData(dataBusStData),
+      .dataBusWriteEn(dataBusStSignal),
+      .dataBusReadEn(dataBusLdSignal),
+      .dataBusWriteMask(dataBusWriteMask),
+
+  );
+
+  registerfile registerfile (
       .clk(clk),
       .arstn(arstn),
       .writeEn(WBStageSignals.rdWriteEn),
@@ -66,6 +92,20 @@ Write-back (WB): Write back the result to the register file
       .EXControl(EXStageSignals)
   );
 
+  pipeEXMEM pipeEXMEM (
+      .clk(clk),
+      .arstn(arstn),
+      .EXControl(EXStageSignals),
+      .MEMControl(MEMStageSignals)
+  );
+
+  pipeMEMWB pipeMEMWB (
+      .clk(clk),
+      .arstn(arstn),
+      .dmLoadData(dmLdData),
+      .MEMControl(MEMStageSignals),
+      .WBControl(WBStageSignals)
+  );
 
 
 endmodule
