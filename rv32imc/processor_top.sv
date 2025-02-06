@@ -6,7 +6,7 @@
  * Apache License, Version 2.0
  * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
-
+import loopyV_data_types::*;
 
 module processor_top (
     input clk,
@@ -39,11 +39,15 @@ Write-back (WB): Write back the result to the register file
   WBStageSignalsType WBStageSignals;
   logic [31:0] dmLdData;
 
-  assign dmLdSignal = MEMStageSignals.loadSignal;
-  assign dmStSignal = MEMStageSignals.storeSignal;
-  assign dmAddr     = MEMStageSignals.rdWriteData;
+  assign dataBusLdSignal = MEMStageSignals.loadSignal;
+  assign dataBusStSignal = MEMStageSignals.storeSignal;
+  assign dataBusAddr     = MEMStageSignals.rdWriteData;
 
   dm_interface dm_interface (
+
+      .MEMControl(MEMStageSignals),
+      .WBControl (WBStageSignals),
+
       .dmAddr(MEMStageSignals.rdWriteData),
       .dmStData(MEMStageSignals.storeData),
       .dmLdData(dmLdData),
@@ -56,31 +60,30 @@ Write-back (WB): Write back the result to the register file
       .dataBusWriteData(dataBusStData),
       .dataBusWriteEn(dataBusStSignal),
       .dataBusReadEn(dataBusLdSignal),
-      .dataBusWriteMask(dataBusWriteMask),
-
+      .dataBusWriteMask(dataBusWriteMask)
   );
 
   registerfile registerfile (
       .clk(clk),
       .arstn(arstn),
       .writeEn(WBStageSignals.rdWriteEn),
-      .writeAddr(WBStageSignals.rdWriteAddr),
+      .writeAddr(WBStageSignals.rdAddr),
       .writeData(WBStageSignals.rdWriteData),
       .readAddr1(DEStageSignals.rs1Addr),
       .readAddr2(DEStageSignals.rs2Addr),
-      .readData1(DEStageSignals.readData1),
-      .readData2(DEStageSignals.readData2)
+      .readData1(DEStageSignals.rs1Data),
+      .readData2(DEStageSignals.rs2Data)
   );
 
   alu alu (
       .operandA(EXStageSignals.operandA),
       .operandB(EXStageSignals.operandB),
       .aluCntrl(EXStageSignals.aluControl),
-      .results (EXStageSignals.aluResult)
+      .result  (EXStageSignals.aluResult)
   );
 
   decoder decoder (
-      .instruction(TODO),
+      .instruction(pmData),
       .illegal_insn(illegal_insn),
       .control(DEStageSignals)
   );

@@ -107,7 +107,14 @@ package loopyV_data_types;
     logic [31:0] rdWriteData;
   } MEMWBPipelineType;
 
-  typedef struct packed {logic rdWriteEn;} WBStageSignals;
+  typedef struct packed {
+    logic [2:0] loadStoreByteSelect;
+    logic rdWriteEn;
+    logic [4:0] rdAddr;
+    logic [1:0] destinationSelect;
+    logic [31:0] pc;
+    logic [31:0] rdWriteData;
+  } WBStageSignalsType;
 
 endpackage
 

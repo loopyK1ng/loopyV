@@ -6,18 +6,19 @@
  * Apache License, Version 2.0
  * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
+import loopyV_data_types::*;
 
 module pipeIDEX (
     input clk,
     input arstn,
-    input DEStageSignals DEControl,
-    output EXStageSignals EXControl
+    input DEStageSignalsType DEControl,
+    output EXStageSignalsType EXControl
 );
 
   logic [31:0] nextOperandA;
   logic [31:0] nextOperandB;
 
-  IDEXPipelineType IDIDEXPipeRegister;
+  IDEXPipelineType IDEXPipeRegister;
 
   // Operand Selection
   always_comb begin

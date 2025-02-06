@@ -26,6 +26,11 @@ module controller (
   assign pcLink = pcPlus4;
 
 
+  // TODO Just temporary:
+  logic [1:0] pcSelect;
+
+
+
   // Instantiate the program counter 
 
   pcReg pc (
@@ -38,8 +43,19 @@ module controller (
 
   // Determine the next program counter
   always_comb begin
-    
-    
+
+    case (pcSelect)
+
+      default: begin
+        nextPc = pcPlus4;
+      end
+    endcase
   end
+
+  // Determine necessary flushes
+
+
+
+
 
 endmodule

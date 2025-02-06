@@ -6,6 +6,7 @@
  * Apache License, Version 2.0
  * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
+import loopyV_data_types::*;
 
 module pipeEXMEM (
     input clk,
@@ -14,16 +15,16 @@ module pipeEXMEM (
     output MEMStageSignalsType MEMControl
 );
 
-  logic nextWriteData;
+  logic [31:0] nextWriteData;
   EXMEMPipelineType EXMEMPipeRegister;
 
 
   // Write Data Selection (doing it here saves a pipeline register)
   always_comb begin
     if (EXControl.destinationSelect == WB_SEL_ALU) begin
-      nextWriteData = DEControl.aluResult;
+      nextWriteData = EXControl.aluResult;
     end else begin
-      nextWriteData = DEControl.immediate; //it could also be a different select, but we don't care here.
+      nextWriteData = EXControl.immediate; //it could also be a different select, but we don't care here.
     end
   end
 

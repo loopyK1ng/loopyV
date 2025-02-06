@@ -7,7 +7,9 @@
  * Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
-// DESTINATION SELECTION needs to be done here.. 
+import loopyV_data_types::*;
+
+// TODO DESTINATION SELECTION needs to be done here.. 
 //after the read! as we need to wait for the memload
 
 module pipeMEMWB (
@@ -15,10 +17,15 @@ module pipeMEMWB (
     input arstn,
     input [31:0] dmLoadData,
     input MEMStageSignalsType MEMControl,
-    input WBStageSignalsType WBControl
+    output WBStageSignalsType WBControl
 );
 
   MEMWBPipelineType MEMWBPipeRegister;
+  
+  assign WBControl.rdAddr = MEMWBPipeRegister.rdAddr;
+  assign WBControl.rdWriteEn = MEMWBPipeRegister.rdWriteEn;
+  assign WBControl.destinationSelect = MEMWBPipeRegister.destinationSelect;
+  assign WBControl.pc = MEMWBPipeRegister.pc;
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
@@ -35,11 +42,6 @@ module pipeMEMWB (
       MEMWBPipeRegister.rdWriteData = MEMControl.rdWriteData;
     end
   end
-
-  assign WBControl.rdAddr = MEMWBPipeRegister.rdAddr;
-  assign WBControl.rdWriteEn = MEMWBPipeRegister.rdWriteEn;
-  assign WBControl.destinationSelect = MEMWBPipeRegister.destinationSelect;
-  assign WBControl.pc = MEMWBPipeRegister.pc;
 
   always_comb begin
     if((WBControl.destinationSelect == WB_SEL_ALU) | (WBControl.destinationSelect == WB_SEL_IMM))begin

@@ -8,8 +8,13 @@
  * Apache License, Version 2.0
  * Copyright (c) 2024 Lennart M. Reimann
 ************************************************************/
+import loopyV_data_types::*;
 
 module dm_interface (
+
+    input MEMStageSignalsType MEMControl,
+    input WBStageSignalsType  WBControl,
+
     input [31:0] dmAddr,
     input [31:0] dmStData,
     output [31:0] dmLdData,
@@ -32,20 +37,20 @@ module dm_interface (
   assign dataBusAddr = dmAddr;
 
   // Write enable mask for storing 
-  
+
   always_comb begin
     case (MEMControl.loadStoreByteSelect)
       FUNCT3_BYTE, FUNCT3_BYTE_U: begin
         dataBusWriteMask = 4'b0001 << dmAddr[1:0];
       end
       FUNCT3_HALFWORD, FUNCT3_HALFWORD_U: begin
-        WBControl.rdWriteData = 4'b0011 << dmAddr[1:0];
+        dataBusWriteMask = 4'b0011 << dmAddr[1:0];
       end
       FUNCT3_WORD: begin
-        WBControl.rdWriteData = 4'b1111;
+        dataBusWriteMask = 4'b1111;
       end
       default: begin
-        WBControl.rdWriteData = 4'bx;
+        dataBusWriteMask = 4'bx;
       end
     endcase
   end
@@ -58,29 +63,29 @@ module dm_interface (
 
   // Align the naturally aligned accesses to the 32-bit format
   // Todo fix address to come from WB stage
-  assign aligned = dataBusReadData >> (address[1:0] * 8);
+  assign aligned = dataBusReadData >> (dmAddr[1:0] * 8);
 
 
   // todo fix signals to not have WB Control
   always_comb begin
     case (WBControl.loadStoreByteSelect)
       FUNCT3_BYTE: begin
-        WBControl.rdWriteData = {{24{aligned[7]}}, aligned[7:0]};
+        dmLdData = {{24{aligned[7]}}, aligned[7:0]};
       end
       FUNCT3_HALFWORD: begin
-        WBControl.rdWriteData = {{16{aligned[15]}}, aligned[15:0]};
+        dmLdData = {{16{aligned[15]}}, aligned[15:0]};
       end
       FUNCT3_WORD: begin
-        WBControl.rdWriteData = aligned;
+        dmLdData = aligned;
       end
       FUNCT3_BYTE_U: begin
-        WBControl.rdWriteData = {24'b0, aligned[7:0]};
+        dmLdData = {24'b0, aligned[7:0]};
       end
       FUNCT3_HALFWORD_U: begin
-        WBControl.rdWriteData = {16'b0, aligned[15:0]};
+        dmLdData = {16'b0, aligned[15:0]};
       end
       default: begin
-        WBControl.rdWriteData = 32'bx;
+        dmLdData = 32'bx;
       end
     endcase
   end
