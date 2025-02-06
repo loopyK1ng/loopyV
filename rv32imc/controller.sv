@@ -36,5 +36,10 @@ module controller (
       .readData(pcIF)
   );
 
+  // Determine the next program counter
+  always_comb begin
+    
+    
+  end
 
 endmodule

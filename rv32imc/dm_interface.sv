@@ -2,16 +2,18 @@
  * The data memory interface of the 32-bit RISC-V processor
  * written by Lennart M. Reimann.
  *
+ * Load is started in MEM stage, data arrives in WB stage
+ * Store is completed in MEM stage (processor's tasks are completed)
  *
  * Apache License, Version 2.0
  * Copyright (c) 2024 Lennart M. Reimann
 ************************************************************/
 
-module dm_interface(
+module dm_interface (
     input [31:0] dmAddr,
     input [31:0] dmStData,
     output [31:0] dmLdData,
-    input [2:0] loadStoreByteSelect
+    input [2:0] loadStoreByteSelect,
     input dmLdSignal,
     input dmStSignal,
 
@@ -20,43 +22,68 @@ module dm_interface(
     output [31:0] dataBusWriteData,
     output dataBusWriteEn,
     output dataBusReadEn,
-    output [3:0] dataBusWriteMask,
-
-
+    output [3:0] dataBusWriteMask
 );
 
-assign dataBusWriteEn = dmStSignal;
-assign dataBusReadEn = dmLdSignal;
-assign dataBusAddr = dmAddr;
+  logic [31:0] aligned;
 
+  assign dataBusWriteEn = dmStSignal;
+  assign dataBusReadEn = dmLdSignal;
+  assign dataBusAddr = dmAddr;
 
-// TODO Check allowed memory alignments! 
-
-
-always_comb begin
-    case (loadStoreByteSelect)
-      case (WBControl.loadStoreByteSelect)
-        FUNCT3_BYTE: begin
-          WBControl.rdWriteData = {{24{dmLoadData[7]}}, dmLoadData[7:0]};
-        end
-        FUNCT3_HALFWORD: begin
-          WBControl.rdWriteData = {{16{dmLoadData[15]}}, dmLoadData[15:0]};
-        end
-        FUNCT3_WORD: begin
-          WBControl.rdWriteData = dmLoadData;
-        end
-        FUNCT3_BYTE_U: begin
-          WBControl.rdWriteData = {24'b0, dmLoadData[7:0]};
-        end
-        FUNCT3_HALFWORD_U: begin
-          WBControl.rdWriteData = {16'b0, dmLoadData[15:0]};
-        end
-        default: begin
-          WBControl.rdWriteData = dmLoadData;
-        end
-      endcase
+  // Write enable mask for storing 
+  
+  always_comb begin
+    case (MEMControl.loadStoreByteSelect)
+      FUNCT3_BYTE, FUNCT3_BYTE_U: begin
+        dataBusWriteMask = 4'b0001 << dmAddr[1:0];
+      end
+      FUNCT3_HALFWORD, FUNCT3_HALFWORD_U: begin
+        WBControl.rdWriteData = 4'b0011 << dmAddr[1:0];
+      end
+      FUNCT3_WORD: begin
+        WBControl.rdWriteData = 4'b1111;
+      end
+      default: begin
+        WBControl.rdWriteData = 4'bx;
+      end
     endcase
-end
+  end
+
+  // Align the data (to be stored) within a word
+  assign dataBusWriteData = dmStData << (dmAddr[1:0] * 8);
+
+  // TODO Assumes naturally aligned accesses! 
+  // Might have to implement an exception.
+
+  // Align the naturally aligned accesses to the 32-bit format
+  // Todo fix address to come from WB stage
+  assign aligned = dataBusReadData >> (address[1:0] * 8);
 
 
-endmodule 
+  // todo fix signals to not have WB Control
+  always_comb begin
+    case (WBControl.loadStoreByteSelect)
+      FUNCT3_BYTE: begin
+        WBControl.rdWriteData = {{24{aligned[7]}}, aligned[7:0]};
+      end
+      FUNCT3_HALFWORD: begin
+        WBControl.rdWriteData = {{16{aligned[15]}}, aligned[15:0]};
+      end
+      FUNCT3_WORD: begin
+        WBControl.rdWriteData = aligned;
+      end
+      FUNCT3_BYTE_U: begin
+        WBControl.rdWriteData = {24'b0, aligned[7:0]};
+      end
+      FUNCT3_HALFWORD_U: begin
+        WBControl.rdWriteData = {16'b0, aligned[15:0]};
+      end
+      default: begin
+        WBControl.rdWriteData = 32'bx;
+      end
+    endcase
+  end
+
+
+endmodule
