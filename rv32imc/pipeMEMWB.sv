@@ -16,45 +16,59 @@ module pipeMEMWB (
     input clk,
     input arstn,
     input [31:0] dmLoadData,
-    input MEMStageSignalsType MEMControl,
-    output WBStageSignalsType WBControl
+    input logic [4:0] rdAddrMEM,
+    input logic rdWriteEnMEM,
+    input logic [1:0] destinationSelectMEM,
+    input logic [31:0] pcMEM,
+    input logic [31:0] rdWriteDataMEM,
+    input logic [31:0] dmAddrMEM,
+
+    output logic [4:0] rdAddrWB,
+    output logic rdWriteEnWB,
+    output logic [1:0] destinationSelectWB,
+    output logic [31:0] pcWB,
+    output logic [31:0] rdWriteDataWB,
+    output logic [31:0] dmAddrWB
 );
 
   MEMWBPipelineType MEMWBPipeRegister;
-  
-  assign WBControl.rdAddr = MEMWBPipeRegister.rdAddr;
-  assign WBControl.rdWriteEn = MEMWBPipeRegister.rdWriteEn;
-  assign WBControl.destinationSelect = MEMWBPipeRegister.destinationSelect;
-  assign WBControl.pc = MEMWBPipeRegister.pc;
+
+
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
       MEMWBPipeRegister.rdAddr = 5'b0;
+      MEMWBPipeRegister.dmAddr = 32'b0;
       MEMWBPipeRegister.rdWriteEn = 0;
       MEMWBPipeRegister.destinationSelect = WB_SEL_ALU;
       MEMWBPipeRegister.pc = 32'b0;
       MEMWBPipeRegister.rdWriteData = 32'b0;
     end else begin
-      MEMWBPipeRegister.rdAddr = MEMControl.rdAddr;
-      MEMWBPipeRegister.rdWriteEn = MEMControl.rdWriteEn;
-      MEMWBPipeRegister.destinationSelect = MEMControl.destinationSelect;
-      MEMWBPipeRegister.pc = MEMControl.pc;
-      MEMWBPipeRegister.rdWriteData = MEMControl.rdWriteData;
+      MEMWBPipeRegister.rdAddr = rdAddrMEM;
+      MEMWBPipeRegister.dmAddr = dmAddrMEM;
+      MEMWBPipeRegister.rdWriteEn = rdWriteEnMEM;
+      MEMWBPipeRegister.destinationSelect = destinationSelectMEM;
+      MEMWBPipeRegister.pc = pcMEM;
+      MEMWBPipeRegister.rdWriteData = rdWriteDataMEM;
     end
   end
 
   always_comb begin
-    if((WBControl.destinationSelect == WB_SEL_ALU) | (WBControl.destinationSelect == WB_SEL_IMM))begin
-      WBControl.rdWriteData = MEMWBPipeRegister.rdWriteData;
-    end else if (WBControl.destinationSelect == WB_SEL_LOAD) begin
-          WBControl.rdWriteData = dmLoadData;
+    if((destinationSelectWB == WB_SEL_ALU) | (destinationSelectWB == WB_SEL_IMM))begin
+      rdWriteDataWB = MEMWBPipeRegister.rdWriteData;
+    end else if (destinationSelectWB == WB_SEL_LOAD) begin
+      rdWriteDataWB = dmLoadData;
     end else begin
       //TODO
-      WBControl.rdWriteData = 32'b0;
+      rdWriteDataWB = 32'b0;
     end
   end
 
-
+  assign rdAddrWB = MEMWBPipeRegister.rdAddr;
+  assign rdWriteEnWB = MEMWBPipeRegister.rdWriteEn;
+  assign destinationSelectWB = MEMWBPipeRegister.destinationSelect;
+  assign pcWB = MEMWBPipeRegister.pc;
+  assign dmAddrWB = MEMWBPipeRegister.dmAddr;
 
 
 endmodule

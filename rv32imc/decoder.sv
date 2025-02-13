@@ -15,68 +15,79 @@ import loopyV_data_types::*;
 module decoder (
     input logic [31:0] instruction,
     output logic illegal_insn,
-    output DEStageSignalsType control
+    output logic loadSignalDE,
+    output logic storeSignalDE,
+    output logic rdWriteEnDE,
+    output logic [4:0] rs1AddrDE,
+    output logic [4:0] rs2AddrDE,
+    output logic [4:0] rdAddrDE,
+    output logic operandASelectDE,
+    output logic operandBSelectDE,
+    output logic [1:0] destinationSelectDE,
+    output logic [3:0] aluControlDE,
+    output logic [31:0] immediateDE,
+    output logic [2:0] loadStoreByteSelectDE
 );
 
 
   always_comb begin
-    control.loadSignal  = 0;
-    control.storeSignal = 0;
-    control.rdWriteEn   = 0;
+    loadSignalDE  = 0;
+    storeSignalDE = 0;
+    rdWriteEnDE   = 0;
     case (instruction[6:0])  // opcode check
       OPCODE_OP: begin
-        control.rs1Addr = instruction[19:15];
-        control.rs2Addr = instruction[24:20];
-        control.rdAddr = instruction[11:7];
-        control.operandASelect = OF_ALU_A_RS1;
-        control.operandBSelect = OF_ALU_B_RS2;
-        control.destinationSelect = WB_SEL_ALU;
+        rs1AddrDE = instruction[19:15];
+        rs2AddrDE = instruction[24:20];
+        rdAddrDE = instruction[11:7];
+        operandASelectDE = OF_ALU_A_RS1;
+        operandBSelectDE = OF_ALU_B_RS2;
+        destinationSelectDE = WB_SEL_ALU;
         case (instruction[31:25])
           FUNCT7_ZEROS: begin
             case (instruction[14:12])  // funct3 check
               FUNCT3_ADD: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_ADD;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_ADD;
+                rdWriteEnDE = 1;
               end
               FUNCT3_SLT: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SLT;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SLT;
+                rdWriteEnDE = 1;
               end
               FUNCT3_SLTU: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SLTU;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SLTU;
+                rdWriteEnDE = 1;
               end
               FUNCT3_AND: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_AND;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_AND;
+                rdWriteEnDE = 1;
               end
               FUNCT3_OR: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_OR;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_OR;
+                rdWriteEnDE = 1;
               end
               FUNCT3_XOR: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_XOR;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_XOR;
+                rdWriteEnDE = 1;
               end
               FUNCT3_SLL: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SLL;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SLL;
+                rdWriteEnDE = 1;
               end
               FUNCT3_SRL: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SRL;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SRL;
+                rdWriteEnDE = 1;
               end
               default: begin
                 illegal_insn = 1;
-                control.rdWriteEn = 0;
+                rdWriteEnDE = 0;
               end
             endcase
           end
@@ -85,76 +96,76 @@ module decoder (
             case (instruction[14:12])  // funct3 check
               FUNCT3_SUB: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SUB;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SUB;
+                rdWriteEnDE = 1;
               end
               FUNCT3_SRA: begin
                 illegal_insn = 0;
-                control.aluControl = ALU_SRA;
-                control.rdWriteEn = 1;
+                aluControlDE = ALU_SRA;
+                rdWriteEnDE = 1;
               end
               default: begin
                 illegal_insn = 1;
-                control.rdWriteEn = 0;
+                rdWriteEnDE = 0;
               end
             endcase
           end
           default: begin
             illegal_insn = 1;
-            control.rdWriteEn = 0;
+            rdWriteEnDE = 0;
           end
         endcase
       end
 
       OPCODE_OP_IMM: begin
-        control.rs1Addr = instruction[19:15];
-        control.rdAddr = instruction[11:7];
-        control.operandASelect = OF_ALU_A_RS1;
-        control.operandBSelect = OF_ALU_B_IMM;
-        control.destinationSelect = WB_SEL_ALU;
+        rs1AddrDE = instruction[19:15];
+        rdAddrDE = instruction[11:7];
+        operandASelectDE = OF_ALU_A_RS1;
+        operandBSelectDE = OF_ALU_B_IMM;
+        destinationSelectDE = WB_SEL_ALU;
         case (instruction[14:12])  //funct3 check
           FUNCT3_ADDI: begin
             illegal_insn = 0;
-            control.aluControl = ALU_ADD;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_ADD;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_SLTI: begin
             illegal_insn = 0;
-            control.aluControl = ALU_SLT;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_SLT;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_SLTIU: begin
             illegal_insn = 0;
-            control.aluControl = ALU_SLTU;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_SLTU;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_ANDI: begin
             illegal_insn = 0;
-            control.aluControl = ALU_AND;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_AND;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_ORI: begin
             illegal_insn = 0;
-            control.aluControl = ALU_OR;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_OR;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_XORI: begin
             illegal_insn = 0;
-            control.aluControl = ALU_XOR;
-            control.immediate = {{20{instruction[31]}}, instruction[31:20]};
-            control.rdWriteEn = 1;
+            aluControlDE = ALU_XOR;
+            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE = 1;
           end
           FUNCT3_SLLI: begin
             if (instruction[31:25] == FUNCT7_ZEROS) begin  //funct7 check
               illegal_insn = 0;
-              control.aluControl = ALU_SLL;
-              control.immediate = {27'b0, instruction[24:20]};
-              control.rdWriteEn = 1;
+              aluControlDE = ALU_SLL;
+              immediateDE = {27'b0, instruction[24:20]};
+              rdWriteEnDE = 1;
             end else begin
               illegal_insn = 1;
             end
@@ -162,14 +173,14 @@ module decoder (
           FUNCT3_SRLI_SRAI: begin
             if (instruction[31:25] == FUNCT7_ZEROS) begin  //funct7 check
               illegal_insn = 0;
-              control.aluControl = ALU_SRA;
-              control.immediate = {27'b0, instruction[24:20]};
-              control.rdWriteEn = 1;
+              aluControlDE = ALU_SRA;
+              immediateDE = {27'b0, instruction[24:20]};
+              rdWriteEnDE = 1;
             end else if (instruction[31:25] == FUNCT7_ZEROS) begin
               illegal_insn = 0;
-              control.aluControl = ALU_SRL;
-              control.immediate = {27'b0, instruction[24:20]};
-              control.rdWriteEn = 1;
+              aluControlDE = ALU_SRL;
+              immediateDE = {27'b0, instruction[24:20]};
+              rdWriteEnDE = 1;
             end else illegal_insn = 1;
           end
           default: begin
@@ -179,20 +190,20 @@ module decoder (
       end
 
       OPCODE_LUI: begin
-        control.destinationSelect = WB_SEL_IMM;
-        control.immediate = {instruction[31:12], 12'b0};
-        control.rdWriteEn = 1;
-        control.rdAddr = instruction[11:7];
+        destinationSelectDE = WB_SEL_IMM;
+        immediateDE = {instruction[31:12], 12'b0};
+        rdWriteEnDE = 1;
+        rdAddrDE = instruction[11:7];
         illegal_insn = 0;
       end
 
       OPCODE_AUIPC: begin
-        control.destinationSelect = WB_SEL_ALU;
-        control.operandASelect = OF_ALU_A_PC;
-        control.operandBSelect = OF_ALU_B_IMM;
-        control.rdWriteEn = 1;
-        control.aluControl = ALU_ADD;
-        control.immediate = {instruction[31:12], 12'b0};
+        destinationSelectDE = WB_SEL_ALU;
+        operandASelectDE = OF_ALU_A_PC;
+        operandBSelectDE = OF_ALU_B_IMM;
+        rdWriteEnDE = 1;
+        aluControlDE = ALU_ADD;
+        immediateDE = {instruction[31:12], 12'b0};
         illegal_insn = 0;
       end
 
@@ -219,76 +230,76 @@ module decoder (
         endcase
       end
       OPCODE_LOAD: begin
-        control.rs1Addr = instruction[19:15];
-        control.rdAddr = instruction[11:7];
-        control.operandASelect = OF_ALU_A_RS1;
-        control.operandBSelect = OF_ALU_B_IMM;
-        control.aluControl = ALU_ADD;
-        control.immediate = {{20{instruction[31]}}, instruction[31:20]};
+        rs1AddrDE = instruction[19:15];
+        rdAddrDE = instruction[11:7];
+        operandASelectDE = OF_ALU_A_RS1;
+        operandBSelectDE = OF_ALU_B_IMM;
+        aluControlDE = ALU_ADD;
+        immediateDE = {{20{instruction[31]}}, instruction[31:20]};
         case (instruction[14:12])  //funct3 check
           FUNCT3_BYTE: begin
             illegal_insn = 0;
-            control.loadSignal = 1;
-            control.destinationSelect = WB_SEL_LOAD;
-            control.loadStoreByteSelect = FUNCT3_BYTE;
-            control.rdWriteEn = 1;
+            loadSignalDE = 1;
+            destinationSelectDE = WB_SEL_LOAD;
+            loadStoreByteSelectDE = FUNCT3_BYTE;
+            rdWriteEnDE = 1;
           end
           FUNCT3_HALFWORD: begin
             illegal_insn = 0;
-            control.loadSignal = 1;
-            control.destinationSelect = WB_SEL_LOAD;
-            control.loadStoreByteSelect = FUNCT3_HALFWORD;
-            control.rdWriteEn = 1;
+            loadSignalDE = 1;
+            destinationSelectDE = WB_SEL_LOAD;
+            loadStoreByteSelectDE = FUNCT3_HALFWORD;
+            rdWriteEnDE = 1;
           end
           FUNCT3_WORD: begin
             illegal_insn = 0;
-            control.loadSignal = 1;
-            control.destinationSelect = WB_SEL_LOAD;
-            control.loadStoreByteSelect = FUNCT3_WORD;
-            control.rdWriteEn = 1;
+            loadSignalDE = 1;
+            destinationSelectDE = WB_SEL_LOAD;
+            loadStoreByteSelectDE = FUNCT3_WORD;
+            rdWriteEnDE = 1;
           end
           FUNCT3_BYTE_U: begin
             illegal_insn = 0;
-            control.loadSignal = 1;
-            control.destinationSelect = WB_SEL_LOAD;
-            control.loadStoreByteSelect = FUNCT3_BYTE_U;
-            control.rdWriteEn = 1;
+            loadSignalDE = 1;
+            destinationSelectDE = WB_SEL_LOAD;
+            loadStoreByteSelectDE = FUNCT3_BYTE_U;
+            rdWriteEnDE = 1;
           end
           FUNCT3_HALFWORD_U: begin
             illegal_insn = 0;
-            control.loadSignal = 1;
-            control.destinationSelect = WB_SEL_LOAD;
-            control.loadStoreByteSelect = FUNCT3_HALFWORD_U;
-            control.rdWriteEn = 1;
+            loadSignalDE = 1;
+            destinationSelectDE = WB_SEL_LOAD;
+            loadStoreByteSelectDE = FUNCT3_HALFWORD_U;
+            rdWriteEnDE = 1;
           end
           default: illegal_insn = 1;
         endcase
       end
       OPCODE_STORE: begin
-        control.rs1Addr = instruction[19:15];
-        control.rs2Addr = instruction[24:20];
-        control.operandASelect = OF_ALU_A_RS1;
-        control.operandBSelect = OF_ALU_B_IMM;
-        control.aluControl = ALU_ADD;
-        control.immediate = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
+        rs1AddrDE = instruction[19:15];
+        rs2AddrDE = instruction[24:20];
+        operandASelectDE = OF_ALU_A_RS1;
+        operandBSelectDE = OF_ALU_B_IMM;
+        aluControlDE = ALU_ADD;
+        immediateDE = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
         case (instruction[14:12])  //funct3 check
           FUNCT3_BYTE: begin
             illegal_insn = 0;
-            control.storeSignal = 1;
-            control.rdWriteEn = 0;
-            control.loadStoreByteSelect = FUNCT3_BYTE;
+            storeSignalDE = 1;
+            rdWriteEnDE = 0;
+            loadStoreByteSelectDE = FUNCT3_BYTE;
           end
           FUNCT3_HALFWORD: begin
             illegal_insn = 0;
-            control.storeSignal = 1;
-            control.rdWriteEn = 0;
-            control.loadStoreByteSelect = FUNCT3_BYTE;
+            storeSignalDE = 1;
+            rdWriteEnDE = 0;
+            loadStoreByteSelectDE = FUNCT3_BYTE;
           end
           FUNCT3_WORD: begin
             illegal_insn = 0;
-            control.storeSignal = 1;
-            control.rdWriteEn = 0;
-            control.loadStoreByteSelect = FUNCT3_BYTE;
+            storeSignalDE = 1;
+            rdWriteEnDE = 0;
+            loadStoreByteSelectDE = FUNCT3_BYTE;
           end
           default: begin
             illegal_insn = 1;

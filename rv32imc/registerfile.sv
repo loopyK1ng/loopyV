@@ -8,6 +8,8 @@ Copyright (c) 2024 Lennart M. Reimann
 ********************************************************/
 
 
+// TODO fix x0 to 0.. rename the registers to X? 
+
 module registerfile (
     input clk,
     input arstn,

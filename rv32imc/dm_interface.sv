@@ -11,40 +11,39 @@
 import loopyV_data_types::*;
 
 module dm_interface (
+    input logic [2:0] loadStoreByteSelectMEM,
+    input logic [2:0] loadStoreByteSelectWB,
 
-    input MEMStageSignalsType MEMControl,
-    input WBStageSignalsType  WBControl,
+    input logic [31:0] dmAddrMEM,
+    input logic [31:0] dmAddrWB,
+    input logic [31:0] dmStData,
+    output logic [31:0] dmLdData,
+    input logic dmLdSignal,
+    input logic dmStSignal,
 
-    input [31:0] dmAddr,
-    input [31:0] dmStData,
-    output [31:0] dmLdData,
-    input [2:0] loadStoreByteSelect,
-    input dmLdSignal,
-    input dmStSignal,
-
-    output [31:0] dataBusAddr,
-    input [31:0] dataBusReadData,
-    output [31:0] dataBusWriteData,
-    output dataBusWriteEn,
-    output dataBusReadEn,
-    output [3:0] dataBusWriteMask
+    output logic [31:0] dataBusAddr,
+    input logic [31:0] dataBusReadData,
+    output logic [31:0] dataBusWriteData,
+    output logic dataBusWriteEn,
+    output logic dataBusReadEn,
+    output logic [3:0] dataBusWriteMask
 );
 
   logic [31:0] aligned;
 
   assign dataBusWriteEn = dmStSignal;
   assign dataBusReadEn = dmLdSignal;
-  assign dataBusAddr = dmAddr;
+  assign dataBusAddr = dmAddrMEM;
 
   // Write enable mask for storing 
 
   always_comb begin
-    case (MEMControl.loadStoreByteSelect)
+    case (loadStoreByteSelectMEM)
       FUNCT3_BYTE, FUNCT3_BYTE_U: begin
-        dataBusWriteMask = 4'b0001 << dmAddr[1:0];
+        dataBusWriteMask = 4'b0001 << dmAddrMEM[1:0];
       end
       FUNCT3_HALFWORD, FUNCT3_HALFWORD_U: begin
-        dataBusWriteMask = 4'b0011 << dmAddr[1:0];
+        dataBusWriteMask = 4'b0011 << dmAddrMEM[1:0];
       end
       FUNCT3_WORD: begin
         dataBusWriteMask = 4'b1111;
@@ -56,19 +55,19 @@ module dm_interface (
   end
 
   // Align the data (to be stored) within a word
-  assign dataBusWriteData = dmStData << (dmAddr[1:0] * 8);
+  assign dataBusWriteData = dmStData << (dmAddrMEM[1:0] * 8);
 
   // TODO Assumes naturally aligned accesses! 
   // Might have to implement an exception.
 
   // Align the naturally aligned accesses to the 32-bit format
   // Todo fix address to come from WB stage
-  assign aligned = dataBusReadData >> (dmAddr[1:0] * 8);
+  assign aligned = dataBusReadData >> (dmAddrWB[1:0] * 8);
 
 
   // todo fix signals to not have WB Control
   always_comb begin
-    case (WBControl.loadStoreByteSelect)
+    case (loadStoreByteSelectWB)
       FUNCT3_BYTE: begin
         dmLdData = {{24{aligned[7]}}, aligned[7:0]};
       end

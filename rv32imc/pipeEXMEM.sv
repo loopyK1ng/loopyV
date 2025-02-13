@@ -11,8 +11,28 @@ import loopyV_data_types::*;
 module pipeEXMEM (
     input clk,
     input arstn,
-    input EXStageSignalsType EXControl,
-    output MEMStageSignalsType MEMControl
+    input logic [31:0] aluResultEX,
+    input logic [31:0] immediateEX,
+    input logic loadSignalEX,
+    input logic storeSignalEX,
+    input logic [2:0] loadStoreByteSelectEX,
+    input logic [31:0] storeDataEX,
+    input logic [4:0] rdAddrEX,
+    input logic rdWriteEnEX,
+    input logic [1:0] destinationSelectEX,
+    input logic [31:0] pcEX,
+
+    output logic loadSignalMEM,
+    output logic storeSignalMEM,
+    output logic [2:0] loadStoreByteSelectMEM,
+    output logic [31:0] storeDataMEM,
+    output logic [4:0] rdAddrMEM,
+    output logic rdWriteEnMEM,
+    output logic [1:0] destinationSelectMEM,
+    output logic [31:0] pcMEM,
+    output logic [31:0] rdWriteDataMEM,
+    output logic [31:0] dmAddrMEM
+
 );
 
   logic [31:0] nextWriteData;
@@ -21,10 +41,10 @@ module pipeEXMEM (
 
   // Write Data Selection (doing it here saves a pipeline register)
   always_comb begin
-    if (EXControl.destinationSelect == WB_SEL_ALU) begin
-      nextWriteData = EXControl.aluResult;
+    if (destinationSelectEX == WB_SEL_ALU) begin
+      nextWriteData = aluResultEX;
     end else begin
-      nextWriteData = EXControl.immediate; //it could also be a different select, but we don't care here.
+      nextWriteData = immediateEX; //it could also be a different select, but we don't care here.
     end
   end
 
@@ -40,26 +60,27 @@ module pipeEXMEM (
       EXMEMPipeRegister.pc = 32'b0;
       EXMEMPipeRegister.rdWriteData = 32'b0;
     end else begin
-      EXMEMPipeRegister.loadSignal = EXControl.loadSignal;
-      EXMEMPipeRegister.storeSignal = EXControl.storeSignal;
-      EXMEMPipeRegister.loadStoreByteSelect = EXControl.loadStoreByteSelect;
-      EXMEMPipeRegister.storeData = EXControl.storeData;
-      EXMEMPipeRegister.rdAddr = EXControl.rdAddr;
-      EXMEMPipeRegister.rdWriteEn = EXControl.rdWriteEn;
-      EXMEMPipeRegister.destinationSelect = EXControl.destinationSelect;
-      EXMEMPipeRegister.pc = EXControl.pc;
+      EXMEMPipeRegister.loadSignal = loadSignalEX;
+      EXMEMPipeRegister.storeSignal = storeSignalEX;
+      EXMEMPipeRegister.loadStoreByteSelect = loadStoreByteSelectEX;
+      EXMEMPipeRegister.storeData = storeDataEX;
+      EXMEMPipeRegister.rdAddr = rdAddrEX;
+      EXMEMPipeRegister.rdWriteEn = rdWriteEnEX;
+      EXMEMPipeRegister.destinationSelect = destinationSelectEX;
+      EXMEMPipeRegister.pc = pcEX;
       EXMEMPipeRegister.rdWriteData = nextWriteData;
     end
   end
 
-  assign MEMControl.loadSignal = EXMEMPipeRegister.loadSignal;
-  assign MEMControl.storeSignal = EXMEMPipeRegister.storeSignal;
-  assign MEMControl.loadStoreByteSelect = EXMEMPipeRegister.loadStoreByteSelect;
-  assign MEMControl.storeData = EXMEMPipeRegister.storeData;
-  assign MEMControl.rdAddr = EXMEMPipeRegister.rdAddr;
-  assign MEMControl.rdWriteEn = EXMEMPipeRegister.rdWriteEn;
-  assign MEMControl.destinationSelect = EXMEMPipeRegister.destinationSelect;
-  assign MEMControl.pc = EXMEMPipeRegister.pc;
-  assign MEMControl.rdWriteData = EXMEMPipeRegister.rdWriteData;
+  assign loadSignalMEM = EXMEMPipeRegister.loadSignal;
+  assign storeSignalMEM = EXMEMPipeRegister.storeSignal;
+  assign loadStoreByteSelectMEM = EXMEMPipeRegister.loadStoreByteSelect;
+  assign storeDataMEM = EXMEMPipeRegister.storeData;
+  assign rdAddrMEM = EXMEMPipeRegister.rdAddr;
+  assign rdWriteEnMEM = EXMEMPipeRegister.rdWriteEn;
+  assign destinationSelectMEM = EXMEMPipeRegister.destinationSelect;
+  assign pcMEM = EXMEMPipeRegister.pc;
+  assign rdWriteDataMEM = EXMEMPipeRegister.rdWriteData;
+  assign dmAddrMEM = EXMEMPipeRegister.rdWriteData;
 
 endmodule

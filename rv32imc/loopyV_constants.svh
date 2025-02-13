@@ -10,7 +10,15 @@
 `ifndef RV_CONSTANTS
 `define RV_CONSTANTS
 
+/*******************/
+/* PIPELINE STAGES */
+/*******************/
 
+localparam PS_IF = 3'b000;
+localparam PS_DE = 3'b001;
+localparam PS_EX = 3'b010;
+localparam PS_MEM = 3'b011;
+localparam PS_WB = 3'b100;
 
 /***********************************************/
 /* INSTRUCTION ENCODING DEFINITIONS FOR RISC-V */
@@ -108,7 +116,7 @@ localparam ALU_SRA = 4'b1001;
 /*****************************/
 
 localparam OF_ALU_A_RS1 = 1'b0;
-localparam OF_ALU_A_PC  = 1'b1;
+localparam OF_ALU_A_PC = 1'b1;
 
 localparam OF_ALU_B_RS2 = 1'b0;
 localparam OF_ALU_B_IMM = 1'b1;

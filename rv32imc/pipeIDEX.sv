@@ -11,8 +11,31 @@ import loopyV_data_types::*;
 module pipeIDEX (
     input clk,
     input arstn,
-    input DEStageSignalsType DEControl,
-    output EXStageSignalsType EXControl
+    input logic operandASelectDE,
+    input logic operandBSelectDE,
+    input logic [31:0] rs1DataDE,
+    input logic [31:0] rs2DataDE,
+    input logic [31:0] pcDE,
+    input logic [31:0] immediateDE,
+    input logic [3:0] aluControlDE,
+    input logic loadSignalDE,
+    input logic storeSignalDE,
+    input logic [2:0] loadStoreByteSelectDE,
+    input logic [4:0] rdAddrDE,
+    input logic rdWriteEnDE,
+    input logic [1:0] destinationSelectDE,
+    
+    output logic [3:0] aluControlEX, 
+    output logic loadSignalEX, 
+    output logic storeSignalEX, 
+    output logic [2:0] loadStoreByteSelectEX, 
+    output logic [31:0] storeDataEX, 
+    output logic [31:0] operandAEX, 
+    output logic [31:0] operandBEX, 
+    output logic [4:0] rdAddrEX, 
+    output logic rdWriteEnEX, 
+    output logic [1:0] destinationSelectEX, 
+    output logic [31:0] pcEX 
 );
 
   logic [31:0] nextOperandA;
@@ -22,16 +45,16 @@ module pipeIDEX (
 
   // Operand Selection
   always_comb begin
-    if (DEControl.operandASelect == OF_ALU_A_RS1) begin
-      nextOperandA = DEControl.rs1Data;
+    if (operandASelectDE == OF_ALU_A_RS1) begin
+      nextOperandA = rs1DataDE;
     end else begin
-      nextOperandA = DEControl.pc;
+      nextOperandA = pcDE;
     end
 
-    if (DEControl.operandBSelect == OF_ALU_B_RS2) begin
-      nextOperandB = DEControl.rs2Data;
+    if (operandBSelectDE == OF_ALU_B_RS2) begin
+      nextOperandB = rs2DataDE;
     end else begin
-      nextOperandB = DEControl.immediate;
+      nextOperandB = immediateDE;
     end
   end
 
@@ -49,31 +72,31 @@ module pipeIDEX (
       IDEXPipeRegister.destinationSelect = WB_SEL_ALU;
       IDEXPipeRegister.pc = 32'b0;
     end else begin
-      IDEXPipeRegister.aluControl = DEControl.aluControl;
-      IDEXPipeRegister.loadSignal = DEControl.loadSignal;
-      IDEXPipeRegister.storeSignal = DEControl.storeSignal;
-      IDEXPipeRegister.loadStoreByteSelect = DEControl.loadStoreByteSelect;
-      IDEXPipeRegister.storeData = DEControl.rs2Data;
+      IDEXPipeRegister.aluControl = aluControlDE;
+      IDEXPipeRegister.loadSignal = loadSignalDE;
+      IDEXPipeRegister.storeSignal = storeSignalDE;
+      IDEXPipeRegister.loadStoreByteSelect = loadStoreByteSelectDE;
+      IDEXPipeRegister.storeData = rs2DataDE;
       IDEXPipeRegister.operandA = nextOperandA;
       IDEXPipeRegister.operandB = nextOperandB;
-      IDEXPipeRegister.rdAddr = DEControl.rdAddr;
-      IDEXPipeRegister.rdWriteEn = DEControl.rdWriteEn;
-      IDEXPipeRegister.destinationSelect = DEControl.destinationSelect;
-      IDEXPipeRegister.pc = DEControl.pc;
+      IDEXPipeRegister.rdAddr = rdAddrDE;
+      IDEXPipeRegister.rdWriteEn = rdWriteEnDE;
+      IDEXPipeRegister.destinationSelect = destinationSelectDE;
+      IDEXPipeRegister.pc = pcDE;
     end
   end
 
 
-  assign EXControl.aluControl = IDEXPipeRegister.aluControl;
-  assign EXControl.loadSignal = IDEXPipeRegister.loadSignal;
-  assign EXControl.storeSignal = IDEXPipeRegister.storeSignal;
-  assign EXControl.loadStoreByteSelect = IDEXPipeRegister.loadStoreByteSelect;
-  assign EXControl.storeData = IDEXPipeRegister.storeData;
-  assign EXControl.operandA = IDEXPipeRegister.operandA;
-  assign EXControl.operandB = IDEXPipeRegister.operandB;
-  assign EXControl.rdAddr = IDEXPipeRegister.rdAddr;
-  assign EXControl.rdWriteEn = IDEXPipeRegister.rdWriteEn;
-  assign EXControl.destinationSelect = IDEXPipeRegister.destinationSelect;
-  assign EXControl.pc = IDEXPipeRegister.pc;
+  assign aluControlEX = IDEXPipeRegister.aluControl;
+  assign loadSignalEX = IDEXPipeRegister.loadSignal;
+  assign storeSignalEX = IDEXPipeRegister.storeSignal;
+  assign loadStoreByteSelectEX = IDEXPipeRegister.loadStoreByteSelect;
+  assign storeDataEX = IDEXPipeRegister.storeData;
+  assign operandAEX = IDEXPipeRegister.operandA;
+  assign operandBEX = IDEXPipeRegister.operandB;
+  assign rdAddrEX = IDEXPipeRegister.rdAddr;
+  assign rdWriteEnEX = IDEXPipeRegister.rdWriteEn;
+  assign destinationSelectEX = IDEXPipeRegister.destinationSelect;
+  assign pcEX = IDEXPipeRegister.pc;
 
 endmodule
