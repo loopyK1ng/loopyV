@@ -50,25 +50,25 @@ module pipeEXMEM (
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
-      EXMEMPipeRegister.loadSignal = 1'b0;
-      EXMEMPipeRegister.storeSignal = 1'b0;
-      EXMEMPipeRegister.loadStoreByteSelect = FUNCT3_BYTE;
-      EXMEMPipeRegister.storeData = 32'b0;
-      EXMEMPipeRegister.rdAddr = 5'b0;
-      EXMEMPipeRegister.rdWriteEn = 0;
-      EXMEMPipeRegister.destinationSelect = WB_SEL_ALU;
-      EXMEMPipeRegister.pc = 32'b0;
-      EXMEMPipeRegister.rdWriteData = 32'b0;
+      EXMEMPipeRegister.loadSignal <= 1'b0;
+      EXMEMPipeRegister.storeSignal <= 1'b0;
+      EXMEMPipeRegister.loadStoreByteSelect <= FUNCT3_BYTE;
+      EXMEMPipeRegister.storeData <= 32'b0;
+      EXMEMPipeRegister.rdAddr <= 5'b0;
+      EXMEMPipeRegister.rdWriteEn <= 0;
+      EXMEMPipeRegister.destinationSelect <= WB_SEL_ALU;
+      EXMEMPipeRegister.pc <= 32'b0;
+      EXMEMPipeRegister.rdWriteData <= 32'b0;
     end else begin
-      EXMEMPipeRegister.loadSignal = loadSignalEX;
-      EXMEMPipeRegister.storeSignal = storeSignalEX;
-      EXMEMPipeRegister.loadStoreByteSelect = loadStoreByteSelectEX;
-      EXMEMPipeRegister.storeData = storeDataEX;
-      EXMEMPipeRegister.rdAddr = rdAddrEX;
-      EXMEMPipeRegister.rdWriteEn = rdWriteEnEX;
-      EXMEMPipeRegister.destinationSelect = destinationSelectEX;
-      EXMEMPipeRegister.pc = pcEX;
-      EXMEMPipeRegister.rdWriteData = nextWriteData;
+      EXMEMPipeRegister.loadSignal <= loadSignalEX;
+      EXMEMPipeRegister.storeSignal <= storeSignalEX;
+      EXMEMPipeRegister.loadStoreByteSelect <= loadStoreByteSelectEX;
+      EXMEMPipeRegister.storeData <= storeDataEX;
+      EXMEMPipeRegister.rdAddr <= rdAddrEX;
+      EXMEMPipeRegister.rdWriteEn <= rdWriteEnEX;
+      EXMEMPipeRegister.destinationSelect <= destinationSelectEX;
+      EXMEMPipeRegister.pc <= pcEX;
+      EXMEMPipeRegister.rdWriteData <= nextWriteData;
     end
   end
 

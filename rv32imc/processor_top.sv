@@ -31,7 +31,7 @@ Memory (MEM): Memory accesses are started here
 Write-back (WB): Write back the result to the register file
 */
 
-  logic [31:0] pc[PS_WB:PS_IF];
+  logic [31:0] pc[PS_WB:PS_IF]/*verilator public*/; 
   logic [3:0] aluControl[PS_EX:PS_DE];
   logic loadSignal[PS_MEM:PS_DE];
   logic storeSignal[PS_MEM:PS_DE];
@@ -52,13 +52,16 @@ Write-back (WB): Write back the result to the register file
   logic [31:0] aluResult[PS_EX:PS_EX];
   logic [31:0] rdWriteData[PS_WB:PS_MEM];
   logic [31:0] dmAddr[PS_WB:PS_MEM];
+  logic [31:0] dmLdData[PS_WB:PS_WB];
 
-  logic [31:0] dmLdData;  // TODO rename with pipeline stage
   logic illegal_insn;
+
+  logic [31:0] dummyPC;
 
   assign dataBusLdSignal = loadSignal[PS_MEM];
   assign dataBusStSignal = storeSignal[PS_MEM];
   assign dataBusAddr     = rdWriteData[PS_MEM];
+  assign pmAddr = pc[PS_IF];
 
   dm_interface dm_interface (
 
@@ -68,7 +71,7 @@ Write-back (WB): Write back the result to the register file
       .dmAddrMEM(dmAddr[PS_MEM]),
       .dmAddrWB(dmAddr[PS_WB]),
       .dmStData(storeData[PS_MEM]),
-      .dmLdData(dmLdData),
+      .dmLdData(dmLdData[PS_WB]),
       .dmLdSignal(loadSignal[PS_MEM]),
       .dmStSignal(storeSignal[PS_MEM]),
 
@@ -99,6 +102,14 @@ Write-back (WB): Write back the result to the register file
       .result  (aluResult[PS_EX])
   );
 
+  controller controller( 
+    .clk(clk),
+    .arstn(arstn),
+    .immediate(immediate[PS_EX]), //Check and rename what PS
+    .pcIF(pc[PS_IF]),
+    .pcLink(dummyPC)
+  );
+  
   decoder decoder (
       .instruction(pmData),
       .illegal_insn(illegal_insn),
@@ -142,7 +153,8 @@ Write-back (WB): Write back the result to the register file
       .rdAddrEX(rdAddr[PS_EX]),
       .rdWriteEnEX(rdWriteEn[PS_EX]),
       .destinationSelectEX(destinationSelect[PS_EX]),
-      .pcEX(pc[PS_EX])
+      .pcEX(pc[PS_EX]),
+      .immediateEX(immediate[PS_EX])
   );
 
   pipeEXMEM pipeEXMEM (
@@ -173,20 +185,22 @@ Write-back (WB): Write back the result to the register file
   pipeMEMWB pipeMEMWB (
       .clk(clk),
       .arstn(arstn),
-      .dmLoadData(dmLdData),
+      .dmLoadData(dmLdData[PS_WB]),
       .rdAddrMEM(rdAddr[PS_MEM]),
       .rdWriteEnMEM(rdWriteEn[PS_MEM]),
       .destinationSelectMEM(destinationSelect[PS_MEM]),
       .pcMEM(pc[PS_MEM]),
       .rdWriteDataMEM(rdWriteData[PS_MEM]),
       .dmAddrMEM(dmAddr[PS_MEM]),
+      .loadStoreByteSelectMEM(loadStoreByteSelect[PS_MEM]),
 
       .rdAddrWB(rdAddr[PS_WB]),
       .rdWriteEnWB(rdWriteEn[PS_WB]),
       .destinationSelectWB(destinationSelect[PS_WB]),
       .pcWB(pc[PS_WB]),
       .rdWriteDataWB(rdWriteData[PS_WB]),
-      .dmAddrWB(dmAddr[PS_WB])
+      .dmAddrWB(dmAddr[PS_WB]),
+      .loadStoreByteSelectWB(loadStoreByteSelect[PS_WB])
   );
 
 

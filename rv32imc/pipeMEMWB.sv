@@ -22,13 +22,15 @@ module pipeMEMWB (
     input logic [31:0] pcMEM,
     input logic [31:0] rdWriteDataMEM,
     input logic [31:0] dmAddrMEM,
+    input logic [2:0] loadStoreByteSelectMEM,
 
     output logic [4:0] rdAddrWB,
     output logic rdWriteEnWB,
     output logic [1:0] destinationSelectWB,
     output logic [31:0] pcWB,
     output logic [31:0] rdWriteDataWB,
-    output logic [31:0] dmAddrWB
+    output logic [31:0] dmAddrWB,
+    output logic [2:0] loadStoreByteSelectWB
 );
 
   MEMWBPipelineType MEMWBPipeRegister;
@@ -37,19 +39,21 @@ module pipeMEMWB (
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
-      MEMWBPipeRegister.rdAddr = 5'b0;
-      MEMWBPipeRegister.dmAddr = 32'b0;
-      MEMWBPipeRegister.rdWriteEn = 0;
-      MEMWBPipeRegister.destinationSelect = WB_SEL_ALU;
-      MEMWBPipeRegister.pc = 32'b0;
-      MEMWBPipeRegister.rdWriteData = 32'b0;
+      MEMWBPipeRegister.rdAddr <= 5'b0;
+      MEMWBPipeRegister.dmAddr <= 32'b0;
+      MEMWBPipeRegister.rdWriteEn <= 0;
+      MEMWBPipeRegister.destinationSelect <= WB_SEL_ALU;
+      MEMWBPipeRegister.pc <= 32'b0;
+      MEMWBPipeRegister.rdWriteData <= 32'b0;
+      MEMWBPipeRegister.loadStoreByteSelect <= 3'b0;
     end else begin
-      MEMWBPipeRegister.rdAddr = rdAddrMEM;
-      MEMWBPipeRegister.dmAddr = dmAddrMEM;
-      MEMWBPipeRegister.rdWriteEn = rdWriteEnMEM;
-      MEMWBPipeRegister.destinationSelect = destinationSelectMEM;
-      MEMWBPipeRegister.pc = pcMEM;
-      MEMWBPipeRegister.rdWriteData = rdWriteDataMEM;
+      MEMWBPipeRegister.rdAddr <= rdAddrMEM;
+      MEMWBPipeRegister.dmAddr <= dmAddrMEM;
+      MEMWBPipeRegister.rdWriteEn <= rdWriteEnMEM;
+      MEMWBPipeRegister.destinationSelect <= destinationSelectMEM;
+      MEMWBPipeRegister.pc <= pcMEM;
+      MEMWBPipeRegister.rdWriteData <= rdWriteDataMEM;
+      MEMWBPipeRegister.loadStoreByteSelect <= loadStoreByteSelectMEM;
     end
   end
 
@@ -69,6 +73,7 @@ module pipeMEMWB (
   assign destinationSelectWB = MEMWBPipeRegister.destinationSelect;
   assign pcWB = MEMWBPipeRegister.pc;
   assign dmAddrWB = MEMWBPipeRegister.dmAddr;
+  assign loadStoreByteSelectWB = MEMWBPipeRegister.loadStoreByteSelect;
 
 
 endmodule

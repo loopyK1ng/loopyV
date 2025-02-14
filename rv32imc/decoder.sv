@@ -293,13 +293,13 @@ module decoder (
             illegal_insn = 0;
             storeSignalDE = 1;
             rdWriteEnDE = 0;
-            loadStoreByteSelectDE = FUNCT3_BYTE;
+            loadStoreByteSelectDE = FUNCT3_HALFWORD;
           end
           FUNCT3_WORD: begin
             illegal_insn = 0;
             storeSignalDE = 1;
             rdWriteEnDE = 0;
-            loadStoreByteSelectDE = FUNCT3_BYTE;
+            loadStoreByteSelectDE = FUNCT3_WORD;
           end
           default: begin
             illegal_insn = 1;

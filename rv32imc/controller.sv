@@ -48,6 +48,7 @@ module controller (
 
       default: begin
         nextPc = pcPlus4;
+        pcWriteEn = 1;
       end
     endcase
   end

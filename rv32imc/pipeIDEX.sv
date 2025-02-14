@@ -28,6 +28,7 @@ module pipeIDEX (
     output logic [3:0] aluControlEX, 
     output logic loadSignalEX, 
     output logic storeSignalEX, 
+    output logic [31:0] immediateEX,
     output logic [2:0] loadStoreByteSelectEX, 
     output logic [31:0] storeDataEX, 
     output logic [31:0] operandAEX, 
@@ -60,29 +61,31 @@ module pipeIDEX (
 
   always_ff @(posedge clk or negedge arstn) begin
     if (!arstn) begin
-      IDEXPipeRegister.aluControl = ALU_ADD;
-      IDEXPipeRegister.loadSignal = 1'b0;
-      IDEXPipeRegister.storeSignal = 1'b0;
-      IDEXPipeRegister.loadStoreByteSelect = FUNCT3_BYTE;
-      IDEXPipeRegister.storeData = 32'b0;
-      IDEXPipeRegister.operandA = 32'b0;
-      IDEXPipeRegister.operandB = 32'b0;
-      IDEXPipeRegister.rdAddr = 5'b0;
-      IDEXPipeRegister.rdWriteEn = 0;
-      IDEXPipeRegister.destinationSelect = WB_SEL_ALU;
-      IDEXPipeRegister.pc = 32'b0;
+      IDEXPipeRegister.aluControl <= ALU_ADD;
+      IDEXPipeRegister.loadSignal <= 1'b0;
+      IDEXPipeRegister.storeSignal <= 1'b0;
+      IDEXPipeRegister.loadStoreByteSelect <= FUNCT3_BYTE;
+      IDEXPipeRegister.storeData <= 32'b0;
+      IDEXPipeRegister.immediate <= 32'b0;
+      IDEXPipeRegister.operandA <= 32'b0;
+      IDEXPipeRegister.operandB <= 32'b0;
+      IDEXPipeRegister.rdAddr <= 5'b0;
+      IDEXPipeRegister.rdWriteEn <= 0;
+      IDEXPipeRegister.destinationSelect <= WB_SEL_ALU;
+      IDEXPipeRegister.pc <= 32'b0;
     end else begin
-      IDEXPipeRegister.aluControl = aluControlDE;
-      IDEXPipeRegister.loadSignal = loadSignalDE;
-      IDEXPipeRegister.storeSignal = storeSignalDE;
-      IDEXPipeRegister.loadStoreByteSelect = loadStoreByteSelectDE;
-      IDEXPipeRegister.storeData = rs2DataDE;
-      IDEXPipeRegister.operandA = nextOperandA;
-      IDEXPipeRegister.operandB = nextOperandB;
-      IDEXPipeRegister.rdAddr = rdAddrDE;
-      IDEXPipeRegister.rdWriteEn = rdWriteEnDE;
-      IDEXPipeRegister.destinationSelect = destinationSelectDE;
-      IDEXPipeRegister.pc = pcDE;
+      IDEXPipeRegister.aluControl <= aluControlDE;
+      IDEXPipeRegister.loadSignal <= loadSignalDE;
+      IDEXPipeRegister.storeSignal <= storeSignalDE;
+      IDEXPipeRegister.immediate <= immediateDE;
+      IDEXPipeRegister.loadStoreByteSelect <= loadStoreByteSelectDE;
+      IDEXPipeRegister.storeData <= rs2DataDE;
+      IDEXPipeRegister.operandA <= nextOperandA;
+      IDEXPipeRegister.operandB <= nextOperandB;
+      IDEXPipeRegister.rdAddr <= rdAddrDE;
+      IDEXPipeRegister.rdWriteEn <= rdWriteEnDE;
+      IDEXPipeRegister.destinationSelect <= destinationSelectDE;
+      IDEXPipeRegister.pc <= pcDE;
     end
   end
 
@@ -91,6 +94,7 @@ module pipeIDEX (
   assign loadSignalEX = IDEXPipeRegister.loadSignal;
   assign storeSignalEX = IDEXPipeRegister.storeSignal;
   assign loadStoreByteSelectEX = IDEXPipeRegister.loadStoreByteSelect;
+  assign immediateEX = IDEXPipeRegister.immediate;
   assign storeDataEX = IDEXPipeRegister.storeData;
   assign operandAEX = IDEXPipeRegister.operandA;
   assign operandBEX = IDEXPipeRegister.operandB;
