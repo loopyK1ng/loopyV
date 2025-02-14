@@ -14,11 +14,11 @@
 /* PIPELINE STAGES */
 /*******************/
 
-localparam PS_IF = 3'b000;
-localparam PS_DE = 3'b001;
-localparam PS_EX = 3'b010;
-localparam PS_MEM = 3'b011;
-localparam PS_WB = 3'b100;
+localparam PS_IF = 0;
+localparam PS_DE = 1;
+localparam PS_EX = 2;
+localparam PS_MEM = 3;
+localparam PS_WB = 4;
 
 /***********************************************/
 /* INSTRUCTION ENCODING DEFINITIONS FOR RISC-V */

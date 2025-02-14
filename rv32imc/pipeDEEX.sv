@@ -1,5 +1,5 @@
 /********************************************************
- * The pipeline ID/EX for the 32-bit RISC-V processor
+ * The pipeline DE/EX for the 32-bit RISC-V processor
  * written by Lennart M. Reimann.
  *
  *
@@ -8,7 +8,7 @@
 ********************************************************/
 import loopyV_data_types::*;
 
-module pipeIDEX (
+module pipeDEEX (
     input clk,
     input arstn,
     input logic operandASelectDE,
@@ -24,23 +24,25 @@ module pipeIDEX (
     input logic [4:0] rdAddrDE,
     input logic rdWriteEnDE,
     input logic [1:0] destinationSelectDE,
-    
-    output logic [3:0] aluControlEX, 
-    output logic loadSignalEX, 
-    output logic storeSignalEX, 
+
+    input logic flushEX,
+
+    output logic [3:0] aluControlEX,
+    output logic loadSignalEX,
+    output logic storeSignalEX,
     output logic [31:0] immediateEX,
-    output logic [2:0] loadStoreByteSelectEX, 
-    output logic [31:0] storeDataEX, 
-    output logic [31:0] operandAEX, 
-    output logic [31:0] operandBEX, 
-    output logic [4:0] rdAddrEX, 
-    output logic rdWriteEnEX, 
-    output logic [1:0] destinationSelectEX, 
-    output logic [31:0] pcEX 
+    output logic [2:0] loadStoreByteSelectEX,
+    output logic [31:0] storeDataEX,
+    output logic [31:0] operandAEX,
+    output logic [31:0] operandBEX,
+    output logic [4:0] rdAddrEX,
+    output logic rdWriteEnEX,
+    output logic [1:0] destinationSelectEX,
+    output logic [31:0] pcEX
 );
 
-  logic [31:0] nextOperandA;
-  logic [31:0] nextOperandB;
+  logic [31:0] nextOperandA /*verilator public*/;
+  logic [31:0] nextOperandB /*verilator public*/;
 
   IDEXPipelineType IDEXPipeRegister;
 
@@ -60,7 +62,7 @@ module pipeIDEX (
   end
 
   always_ff @(posedge clk or negedge arstn) begin
-    if (!arstn) begin
+    if (!arstn || flushEX) begin
       IDEXPipeRegister.aluControl <= ALU_ADD;
       IDEXPipeRegister.loadSignal <= 1'b0;
       IDEXPipeRegister.storeSignal <= 1'b0;
@@ -73,7 +75,7 @@ module pipeIDEX (
       IDEXPipeRegister.rdWriteEn <= 0;
       IDEXPipeRegister.destinationSelect <= WB_SEL_ALU;
       IDEXPipeRegister.pc <= 32'b0;
-    end else begin
+    end else  begin
       IDEXPipeRegister.aluControl <= aluControlDE;
       IDEXPipeRegister.loadSignal <= loadSignalDE;
       IDEXPipeRegister.storeSignal <= storeSignalDE;

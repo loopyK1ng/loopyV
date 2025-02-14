@@ -10,6 +10,7 @@
 module controller (
     input clk,
     input arstn,
+    input stallIFDE,
     input [31:0] immediate,
     output [31:0] pcIF,
     output [31:0] pcLink
@@ -48,7 +49,7 @@ module controller (
 
       default: begin
         nextPc = pcPlus4;
-        pcWriteEn = 1;
+        pcWriteEn = ~stallIFDE;
       end
     endcase
   end

@@ -58,9 +58,9 @@ module pipeMEMWB (
   end
 
   always_comb begin
-    if((destinationSelectWB == WB_SEL_ALU) | (destinationSelectWB == WB_SEL_IMM))begin
+    if((MEMWBPipeRegister.destinationSelect == WB_SEL_ALU) | (MEMWBPipeRegister.destinationSelect == WB_SEL_IMM))begin
       rdWriteDataWB = MEMWBPipeRegister.rdWriteData;
-    end else if (destinationSelectWB == WB_SEL_LOAD) begin
+    end else if (MEMWBPipeRegister.destinationSelect == WB_SEL_LOAD) begin
       rdWriteDataWB = dmLoadData;
     end else begin
       //TODO

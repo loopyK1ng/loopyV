@@ -31,9 +31,19 @@ module decoder (
 
 
   always_comb begin
-    loadSignalDE  = 0;
+    illegal_insn = 0;
+    loadSignalDE = 0;
     storeSignalDE = 0;
-    rdWriteEnDE   = 0;
+    rdWriteEnDE = 0;
+    rs1AddrDE = 5'b0;
+    rs2AddrDE = 5'b0;
+    rdAddrDE = 5'b0;
+    operandASelectDE = 1'b0;
+    operandBSelectDE = 1'b0;
+    destinationSelectDE = 2'b0;
+    aluControlDE = 4'b0;
+    immediateDE = 32'b0;
+    loadStoreByteSelectDE = 3'b0;
     case (instruction[6:0])  // opcode check
       OPCODE_OP: begin
         rs1AddrDE = instruction[19:15];
@@ -48,46 +58,46 @@ module decoder (
               FUNCT3_ADD: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_ADD;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_SLT: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SLT;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_SLTU: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SLTU;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_AND: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_AND;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_OR: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_OR;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_XOR: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_XOR;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_SLL: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SLL;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_SRL: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SRL;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               default: begin
                 illegal_insn = 1;
-                rdWriteEnDE = 0;
+                rdWriteEnDE  = 0;
               end
             endcase
           end
@@ -97,22 +107,22 @@ module decoder (
               FUNCT3_SUB: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SUB;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               FUNCT3_SRA: begin
                 illegal_insn = 0;
                 aluControlDE = ALU_SRA;
-                rdWriteEnDE = 1;
+                rdWriteEnDE  = 1;
               end
               default: begin
                 illegal_insn = 1;
-                rdWriteEnDE = 0;
+                rdWriteEnDE  = 0;
               end
             endcase
           end
           default: begin
             illegal_insn = 1;
-            rdWriteEnDE = 0;
+            rdWriteEnDE  = 0;
           end
         endcase
       end
@@ -127,45 +137,45 @@ module decoder (
           FUNCT3_ADDI: begin
             illegal_insn = 0;
             aluControlDE = ALU_ADD;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_SLTI: begin
             illegal_insn = 0;
             aluControlDE = ALU_SLT;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_SLTIU: begin
             illegal_insn = 0;
             aluControlDE = ALU_SLTU;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_ANDI: begin
             illegal_insn = 0;
             aluControlDE = ALU_AND;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_ORI: begin
             illegal_insn = 0;
             aluControlDE = ALU_OR;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_XORI: begin
             illegal_insn = 0;
             aluControlDE = ALU_XOR;
-            immediateDE = {{20{instruction[31]}}, instruction[31:20]};
-            rdWriteEnDE = 1;
+            immediateDE  = {{20{instruction[31]}}, instruction[31:20]};
+            rdWriteEnDE  = 1;
           end
           FUNCT3_SLLI: begin
             if (instruction[31:25] == FUNCT7_ZEROS) begin  //funct7 check
               illegal_insn = 0;
               aluControlDE = ALU_SLL;
-              immediateDE = {27'b0, instruction[24:20]};
-              rdWriteEnDE = 1;
+              immediateDE  = {27'b0, instruction[24:20]};
+              rdWriteEnDE  = 1;
             end else begin
               illegal_insn = 1;
             end
@@ -174,13 +184,13 @@ module decoder (
             if (instruction[31:25] == FUNCT7_ZEROS) begin  //funct7 check
               illegal_insn = 0;
               aluControlDE = ALU_SRA;
-              immediateDE = {27'b0, instruction[24:20]};
-              rdWriteEnDE = 1;
+              immediateDE  = {27'b0, instruction[24:20]};
+              rdWriteEnDE  = 1;
             end else if (instruction[31:25] == FUNCT7_ZEROS) begin
               illegal_insn = 0;
               aluControlDE = ALU_SRL;
-              immediateDE = {27'b0, instruction[24:20]};
-              rdWriteEnDE = 1;
+              immediateDE  = {27'b0, instruction[24:20]};
+              rdWriteEnDE  = 1;
             end else illegal_insn = 1;
           end
           default: begin
