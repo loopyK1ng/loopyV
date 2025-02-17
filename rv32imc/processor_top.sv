@@ -37,11 +37,11 @@ Write-back (WB): Write back the result to the register file
   logic storeSignal[PS_MEM:PS_DE];
   logic [2:0] loadStoreByteSelect[PS_WB:PS_DE];
   logic [31:0] storeData[PS_MEM:PS_EX];
-  logic [4:0] rs1Addr[PS_DE:PS_DE];
-  logic [4:0] rs2Addr[PS_DE:PS_DE];
+  logic [4:0] rs1Addr[PS_DE:PS_DE]/*verilator public*/;
+  logic [4:0] rs2Addr[PS_DE:PS_DE]/*verilator public*/;
   logic [31:0] rs1Data[PS_DE:PS_DE]/*verilator public*/;
   logic [31:0] rs2Data[PS_DE:PS_DE]/*verilator public*/;
-  logic [4:0] rdAddr[PS_WB:PS_DE];
+  logic [4:0] rdAddr[PS_WB:PS_DE]/*verilator public*/;
   logic rdWriteEn[PS_WB:PS_DE]  /*verilator public*/;
   logic operandASelect[PS_DE:PS_DE]/*verilator public*/;
   logic operandBSelect[PS_DE:PS_DE]/*verilator public*/;

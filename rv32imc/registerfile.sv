@@ -22,7 +22,7 @@ module registerfile (
     output [31:0] readData2
 );
 
-  logic [31:0] registers[32];
+  logic [31:0] registers[32] /*verilator public*/;
 
   // Register x0 is always 0
   initial registers[0] = 32'b0;
